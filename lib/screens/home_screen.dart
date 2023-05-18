@@ -8,7 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:viajes_app/screens/screens.dart';
 import 'package:viajes_app/services/socket_service.dart';
+import 'package:viajes_app/theme/app_theme.dart';
 import '../models/models.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -20,12 +22,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Viaje> _viajes = [];
   List<Event> _events = [];
+  Viaje _proxViaje = Viaje(
+      nombre: 'No hay viajes próximos',
+      urlImagen: 'https://viajes.es/static/img/no-trips.1b9b7b7.png',
+      fechaInicio: DateTime.now(),
+      fechaFin: DateTime.now(),
+      estado: 'No hay viajes próximos',
+       descripcion: '', 
+       id: '');
 
   @override
   void initState() {
     super.initState();
     final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket.emit('solicitud-viajes');
+    socketService.socket.emit('solicitud-viajes',socketService.correo);
+    socketService.socket.emit("register-user",socketService.correo);
     socketService.socket.on(
         'envio-viajes',
         (payload) => {
@@ -47,8 +58,141 @@ class _HomeScreenState extends State<HomeScreen> {
                       .toList();
                 })
             });
+    socketService.socket.on("añadido-a-viaje", (payload) =>
+    setState(() {
+      socketService.socket.emit('solicitud-viajes',socketService.correo);
+    }));
 
     
+  }
+
+  void nuevoViajeDialog(BuildContext context) async {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    final _formKey = GlobalKey<FormState>();
+    final _nombreController = TextEditingController();
+    final _urlImagenController = TextEditingController();
+    DateTime? _fechaInicio;
+    DateTime? _fechaFin;
+
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              key: UniqueKey(),
+              title: Text('Añadir nuevo viaje'),
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _nombreController,
+                      decoration:
+                          InputDecoration(labelText: 'Nombre del viaje'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese un nombre';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: _urlImagenController,
+                      decoration:
+                          InputDecoration(labelText: 'URL de la imagen'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese una URL';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Text("Fecha de inicio:",
+                        style: GoogleFonts.lato(
+                            textStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54))),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            _fechaInicio = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2100),
+                            );
+                            setState(() {});
+                          },
+                        ),
+                        Text(_fechaInicio == null
+                            ? 'Añadir fecha de inicio'
+                            : DateFormat('yyyy-MM-dd').format(_fechaInicio!)),
+                      ],
+                    ),
+                    Text("Fecha de fin:",
+                        style: GoogleFonts.lato(
+                            textStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54))),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            _fechaFin = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2100),
+                            );
+                            setState(() {});
+                          },
+                        ),
+                        Text(_fechaFin == null
+                            ? 'Añadir fecha de fin'
+                            : DateFormat('yyyy-MM-dd').format(_fechaFin!)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Añadir'),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate() &&
+                        _fechaInicio != null &&
+                        _fechaFin != null) {
+                      // Aquí debes implementar el envío de datos al servidor
+                      socketService.emit("add-viaje", {
+                        "correo": socketService.correo,
+                        "nombre": _nombreController.text,
+                        "urlImagen": _urlImagenController.text,
+                        "fechaInicio": _fechaInicio!.toIso8601String(),
+                        "fechaFin": _fechaFin!.toIso8601String(),
+                      });
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ],
+            );
+          });
+        });
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -73,6 +217,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _viajes.sort((a, b) => a.fechaInicio.compareTo(b.fechaInicio));
+
+    int index = _viajes
+        .indexWhere((viaje) => viaje.fechaInicio.isAfter(DateTime.now()));
+
+    if (index != -1) {
+      _proxViaje = _viajes[index];
+    }
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 249, 249, 249),
       body: SafeArea(
@@ -81,9 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const BarraSuperior(),
               const SizedBox(height: 10),
-              const Padding(
+              Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: SiguientePlan()),
+                  child: SiguientePlan(proxViaje: _proxViaje)),
               const SizedBox(height: 10),
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -100,17 +253,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 10),
-                                child: Text("Próximos viajes",
-                                    style: GoogleFonts.lato(
-                                        textStyle: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black54))),
-                              ),
+                            Row(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Text("Próximos viajes",
+                                        style: GoogleFonts.lato(
+                                            textStyle: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black54))),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.amberAccent,
+                                      ),
+                                     
+                                      
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             Carusel_viajes(),
                           ],
@@ -120,7 +292,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      
+    floatingActionButton: FloatingActionButton(
+    onPressed: () {
+    nuevoViajeDialog(context);
+    },
+    child: const Icon(Icons.add),
+    backgroundColor: AppTheme.primary,
+    ),
     );
   }
 
@@ -310,17 +488,24 @@ class Event {
 }
 
 class SiguientePlan extends StatelessWidget {
+  final Viaje proxViaje;
+
   const SiguientePlan({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+    required this.proxViaje,
+  });
 
   @override
   Widget build(BuildContext context) {
+    print(proxViaje.urlImagen);
     return GestureDetector(
       onTap: () {
+        final socketService =
+            Provider.of<SocketService>(context, listen: false);
+
+        socketService.setViaje(proxViaje);
         Navigator.push(
           context,
-          //MaterialPageRoute(builder: (context) => const TestScreen()),
           MaterialPageRoute(builder: (context) => const ComponentesScreen()),
         );
       },
@@ -351,12 +536,11 @@ class SiguientePlan extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   clipBehavior: Clip.antiAlias,
-                  child: const SizedBox(
+                  child: SizedBox(
                       height: 80,
                       width: 80,
                       child: Image(
-                        image: NetworkImage(
-                            "https://images.squarespace-cdn.com/content/v1/611faaa8fee682525ee16489/cdd075e3-87cb-4d47-8917-a3fa1985e3d7/AdobeStock_501177955.jpeg?format=1000w"),
+                        image: NetworkImage(proxViaje.urlImagen),
                         fit: BoxFit.cover,
                       )),
                 ),
@@ -367,7 +551,7 @@ class SiguientePlan extends StatelessWidget {
                     children: [
                       Padding(
                           padding: const EdgeInsets.only(top: 20.0),
-                          child: Text("Viaje a viena 2023",
+                          child: Text(proxViaje.nombre,
                               style: GoogleFonts.lato(
                                   textStyle: const TextStyle(
                                       fontSize: 18,
@@ -423,7 +607,6 @@ class ViajeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final socketService = Provider.of<SocketService>(context, listen: false);
-    
 
     return GestureDetector(
       onTap: () {

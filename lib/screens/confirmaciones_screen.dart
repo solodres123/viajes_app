@@ -51,7 +51,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     socketService.emit('peticion-this-componente', payload);
 
     socketService.socket.on(
-        'envio-this-componente',
+        'envio-this-componente-confirmados',
         (payload) => {
               print("patata"),
               if (mounted)
@@ -75,7 +75,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
             child: Text(
               usuarios[index].nombre.substring(0, 1) +
                   usuarios[index].apellido_1.substring(0, 1),
-              style: TextStyle(
+              style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 20),
@@ -102,20 +102,20 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       , //quiero un boton en la barra de arriba para borrar el componente
       actions: [
         IconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           onPressed: () {
              showDialog(
                context: context,
                builder: (context) => AlertDialog(
-                 title: Text('¿Estás seguro?'),
-                 content: Text('No podrás recuperar el componente'),
+                 title: const Text('¿Estás seguro?'),
+                 content: const Text('No podrás recuperar el componente'),
                  actions: [
                    TextButton(
-                     child: Text('Cancelar'),
+                     child: const Text('Cancelar'),
                      onPressed: () => Navigator.pop(context),
                    ),
                    TextButton(
-                     child: Text('Borrar'),
+                     child: const Text('Borrar'),
                      onPressed: () {
                        Map<String, dynamic> payload = {
                         'id': socketService.idComponente,
@@ -136,30 +136,30 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pendiente',
+            const Text('Pendiente',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             buildUserList(usuariosPorEstado['pendiente']!),
-            Text('Confirmado',
+            const Text('Confirmado',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             buildUserList(usuariosPorEstado['confirmado']!),
-            SizedBox(height: 16),
-            SizedBox(height: 16),
-            Text('No asistirá',
+            const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Text('No asistirá',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             buildUserList(usuariosPorEstado['no asistira']!),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showOptionsDialog(context),
-        child: Icon(Icons.edit),
+        child: const Icon(Icons.edit),
       ),
     );
   }
@@ -169,17 +169,16 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
 
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Cambiar estado'),
+          title: const Text('Cambiar estado'),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioListTile<String>(
-                    title: Text('Pendiente'),
+                    title: const Text('Pendiente'),
                     value: 'pendiente',
                     groupValue: _selectedOption,
                     onChanged: (String? value) {
@@ -189,7 +188,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
                     },
                   ),
                   RadioListTile<String>(
-                    title: Text('Confirmado'),
+                    title: const Text('Confirmado'),
                     value: 'confirmado',
                     groupValue: _selectedOption,
                     onChanged: (String? value) {
@@ -199,7 +198,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
                     },
                   ),
                   RadioListTile<String>(
-                    title: Text('No asistirá'),
+                    title: const Text('No asistirá'),
                     value: 'no asistira',
                     groupValue: _selectedOption,
                     onChanged: (String? value) {
@@ -214,7 +213,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
           ),
           actions: [
             TextButton(
-              child: Text('Actualizar'),
+              child: const Text('Actualizar'),
               onPressed: () {
                 final socketService =
                     Provider.of<SocketService>(context, listen: false);
@@ -222,6 +221,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
                   'id_componente': socketService.idComponente,
                   "correo_usuario": socketService.correo,
                   "estado": _selectedOption,
+                  "viaje_id": socketService.viaje.id,
                 };
                 socketService.emit('cambio-confirmacion', payload);
                 Navigator.of(context).pop();

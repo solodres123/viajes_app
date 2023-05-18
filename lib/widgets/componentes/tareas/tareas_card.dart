@@ -5,22 +5,22 @@ import '../../../screens/screens.dart';
 import '../../../services/socket_service.dart';
 import '../partes_comunes.dart';
 
-class PersonasComp extends StatelessWidget {
+class TareasComp extends StatelessWidget {
   final int size;
   final String name;
   final Color color;
-  final int actual;
-  final int maximo;
+  final int completadas;
+  final int total;
   final String id;
   final String tipo;
 
-  PersonasComp(
+  TareasComp(
       {super.key,
       required this.size,
       required this.name,
       required this.color,
-      required this.actual,
-      required this.maximo,
+      required this.completadas,
+      required this.total,
       required this.id,
       required this.tipo
       });
@@ -37,7 +37,9 @@ class PersonasComp extends StatelessWidget {
     Icons.luggage,
   ];
 
-  Color getIconColor(Color backgroundColor) {
+
+
+ Color getIconColor(Color backgroundColor) {
     final hslColor = HSLColor.fromColor(backgroundColor);
     final saturation = hslColor.saturation;
     final lightness = hslColor.lightness;
@@ -89,7 +91,7 @@ class PersonasComp extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ConfirmationScreen()),);
+                        builder: (context) => const TareasScreen()),);
                 },
       child: Card(
           margin: const EdgeInsets.all(0),
@@ -103,7 +105,7 @@ class PersonasComp extends StatelessWidget {
             Icono(
                 color: color,
                 iconColor: iconColor,
-                icon: Icons.person_rounded,
+                icon: Icons.list_alt,
                 maxWidth: maxWidth,
                 tamanoCirculo: tamanoCirculo,
                 tamanoIcono: tamanoIcono),
@@ -115,15 +117,28 @@ class PersonasComp extends StatelessWidget {
             SubTitulo(
                 tamanoSubTitulo: tamanoSubTitulo,
                 fuenteSubTitulo: fuenteSubTitulo,
-                subTitulo: "$actual/$maximo\nconfirmados"),
+                subTitulo: "$completadas/$total\ncompletadas"),
             Padding(padding: EdgeInsets.only(top: paddingTextoBarra)),
+           
+           completadas==0 && total==0?
             BarraProgreso(
-                actual: actual,
-                maximo: maximo,
+                actual: 1,
+                maximo: 1,
                 paddingTextoBarra: paddingTextoBarra,
                 maxWidth: maxWidth * 0.7,
-                tamanoBarra: tamanoBarra),
+                tamanoBarra: tamanoBarra):
+            BarraProgreso(
+                actual: completadas,
+                maximo: total,
+                paddingTextoBarra: paddingTextoBarra,
+                maxWidth: maxWidth * 0.7,
+                tamanoBarra: tamanoBarra)
+                
+                
+                ,
           ])),
     )));
   }
 }
+
+  

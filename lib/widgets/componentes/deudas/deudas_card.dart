@@ -1,29 +1,29 @@
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../screens/screens.dart';
 import '../../../services/socket_service.dart';
 import '../partes_comunes.dart';
 
-class PersonasComp extends StatelessWidget {
+class DeudasComp extends StatelessWidget {
   final int size;
   final String name;
   final Color color;
-  final int actual;
-  final int maximo;
   final String id;
+  final int debes;
   final String tipo;
+  final int teDeben;
+  
 
-  PersonasComp(
+  DeudasComp(
       {super.key,
       required this.size,
       required this.name,
       required this.color,
-      required this.actual,
-      required this.maximo,
+      required this.debes,
+      required this.teDeben,
       required this.id,
-      required this.tipo
-      });
+      required this.tipo});
 
   final List<IconData> icons = [
     Icons.shopping_cart_rounded,
@@ -35,6 +35,7 @@ class PersonasComp extends StatelessWidget {
     Icons.bed,
     Icons.lightbulb,
     Icons.luggage,
+    Icons.attach_money_outlined
   ];
 
   Color getIconColor(Color backgroundColor) {
@@ -52,7 +53,7 @@ class PersonasComp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     final socketService = Provider.of<SocketService>(context, listen: false);
+    final socketService = Provider.of<SocketService>(context, listen: false);
     Color iconColor = getIconColor(color);
 
     final cellWidth = size.toDouble();
@@ -78,52 +79,49 @@ class PersonasComp extends StatelessWidget {
 
     // ignore: avoid_print, prefer_interpolation_to_compose_strings
     print("widget:" + maxHeight.toString());
-    return  SizedBox(
+    return SizedBox(
         width: cellWidth,
         height: cellHeight,
-        child:Padding(
-      padding: EdgeInsets.all(paddingMarco),
-      child: GestureDetector(
-                onTap: () {
-                  socketService.setComponente(id,tipo);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ConfirmationScreen()),);
-                },
-      child: Card(
-          margin: const EdgeInsets.all(0),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(anduloEsquina)),
-          clipBehavior: Clip.antiAlias,
-          elevation: 8,
-          shadowColor: Colors.black,
-          child: Column(children: [
-            Padding(padding: EdgeInsets.only(top: paddingIconoArriba)),
-            Icono(
-                color: color,
-                iconColor: iconColor,
-                icon: Icons.person_rounded,
-                maxWidth: maxWidth,
-                tamanoCirculo: tamanoCirculo,
-                tamanoIcono: tamanoIcono),
-            Padding(padding: EdgeInsets.only(bottom: paddingIconoAbajo)),
-            Titulo(
-                tamanoTitulo: tamanoTitulo,
-                fuenteTitulo: fuenteTitulo,
-                titulo: name),
-            SubTitulo(
-                tamanoSubTitulo: tamanoSubTitulo,
-                fuenteSubTitulo: fuenteSubTitulo,
-                subTitulo: "$actual/$maximo\nconfirmados"),
-            Padding(padding: EdgeInsets.only(top: paddingTextoBarra)),
-            BarraProgreso(
-                actual: actual,
-                maximo: maximo,
-                paddingTextoBarra: paddingTextoBarra,
-                maxWidth: maxWidth * 0.7,
-                tamanoBarra: tamanoBarra),
-          ])),
-    )));
+        child: Padding(
+            padding: EdgeInsets.all(paddingMarco),
+            child: GestureDetector(
+              onTap: () {
+                socketService.setComponente(id, tipo);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PaymentsScreen()),
+                );
+              },
+              child: Card(
+                  margin: const EdgeInsets.all(0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(anduloEsquina)),
+                  clipBehavior: Clip.antiAlias,
+                  elevation: 8,
+                  shadowColor: Colors.black,
+                  child: Column(children: [
+                    Padding(padding: EdgeInsets.only(top: paddingIconoArriba)),
+                    Icono(
+                        color: color,
+                        iconColor: iconColor,
+                        icon: Icons.attach_money_outlined,
+                        maxWidth: maxWidth,
+                        tamanoCirculo: tamanoCirculo,
+                        tamanoIcono: tamanoIcono),
+                    Padding(
+                        padding: EdgeInsets.only(bottom: paddingIconoAbajo)),
+                    Titulo(
+                        tamanoTitulo: tamanoTitulo,
+                        fuenteTitulo: fuenteTitulo,
+                        titulo: name),
+                    SubTitulo(
+                        tamanoSubTitulo: tamanoSubTitulo,
+                        fuenteSubTitulo: fuenteSubTitulo,
+                        subTitulo: "Han gastado:" + "\n" + debes.toString() + "€"
+                            ),
+                    Padding(padding: EdgeInsets.only(top: paddingTextoBarra)),
+                  ])),
+            )));
   }
 }

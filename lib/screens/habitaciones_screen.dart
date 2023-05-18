@@ -27,13 +27,13 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
     socketService.emit('peticion-this-componente', payload);
 
     socketService.socket.on(
-        'envio-this-componente',
+        'envio-this-componente-habitaciones',
         (payload) => {
               if (mounted)
                 {
+                  print("componente inicializado"),
                   setState(() {
                     componente = ComponenteHabitacion.fromMap(payload);
-                    print("componente inicializado");
                   })
                 }
             });
@@ -42,44 +42,18 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
 
   @override
   Widget build(BuildContext context) {
-     final socketService = Provider.of<SocketService>(context, listen: false);
+    final socketService = Provider.of<SocketService>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text(componente.nombre),
-         actions: [
-        IconButton(
-          icon: Icon(Icons.delete),
-          onPressed: () {
-             showDialog(
-               context: context,
-               builder: (context) => AlertDialog(
-                 title: Text('¿Estás seguro?'),
-                 content: Text('No podrás recuperar el componente'),
-                 actions: [
-                   TextButton(
-                     child: Text('Cancelar'),
-                     onPressed: () => Navigator.pop(context),
-                   ),
-                   TextButton(
-                     child: Text('Borrar'),
-                     onPressed: () {
-                       Map<String, dynamic> payload = {
-                        'id': socketService.idComponente,
-                        'viaje_id': socketService.viaje.id,
-                    };
-                    Navigator.pop(context);
-                    socketService.emit('borrar-componente', payload);
-                    Navigator.pop(context);
-                     },
-                   )
-                 ],
-               ),
-             );
-
-            
-          },
-        )
-      ],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              dialogo_borrar(context, socketService);
+            },
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -101,40 +75,15 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
                             habitacion.nombre,
                             style: const TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.bold),
-                          ), 
+                          ),
                           //el icono lo quiero a la derecha
-                          Spacer(),
+                          const Spacer(),
                           IconButton(
                             onPressed: () {
-                             showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text('¿Estás seguro?'),
-                                  content: Text('No podrás recuperar la habitación'),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('Cancelar'),
-                                      onPressed: () => Navigator.pop(context),
-                                    ),
-                                    TextButton(
-                                      child: Text('Borrar'),
-                                      onPressed: () {
-
-                                        Map<String, dynamic> payload = {
-                                          'id_habitacion': habitacion.id,
-                                          'viaje_id': socketService.viaje.id,
-                                          "id_componente": socketService.idComponente,
-                                        };
-                                        Navigator.pop(context);
-                                        socketService.emit('borrar-habitacion', payload);
-                                        
-                                      },
-                                    )
-                                  ],
-                                ),
-                              );
+                              dialogo_borrar_confirmation(
+                                  context, habitacion, socketService);
                             },
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                           ),
                         ],
                       ),
@@ -169,66 +118,7 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
                           );
                         } else {
                           Cama cama = habitacion.camas[index];
-                          return Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: GestureDetector(
-                                onTap: () => _modCamaDialog(
-                                    context, habitacion.id, cama),
-                                child: Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0),
-                                  ),
-                                  elevation: 5,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.blueGrey[100],
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Cama ${cama.tipo}',
-                                              style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        ...cama.usuarios.map(
-                                          (usuario) => ListTile(
-                                            contentPadding:
-                                                const EdgeInsets.all(0),
-                                            horizontalTitleGap: 2,
-                                            leading: CircleAvatar(
-                                              maxRadius: 15,
-                                              backgroundColor: usuario.color,
-                                              child: Text(
-                                                usuario.nombre.substring(0, 1) +
-                                                    usuario.apellido_1
-                                                        .substring(0, 1),
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                    fontFamily: 'Roboto'),
-                                              ),
-                                            ),
-                                            title: Text(usuario.nombre +
-                                                ' ' +
-                                                usuario.apellido_1),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ));
+                          return lista_camas(context, habitacion, cama);
                         }
                       },
                       options: CarouselOptions(
@@ -275,16 +165,124 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
     );
   }
 
-//q: cual es el problema con el size
-//a: el problema es que el size es el de la pantalla, no el del dialog
-//q: como se soluciona
-//a: se le pasa un size al dialog
+  Future<dynamic> dialogo_borrar_confirmation(BuildContext context,
+      Habitacion habitacion, SocketService socketService) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Estás seguro?'),
+        content: const Text('No podrás recuperar la habitación'),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: const Text('Borrar'),
+            onPressed: () {
+              Map<String, dynamic> payload = {
+                'id_habitacion': habitacion.id,
+                'viaje_id': socketService.viaje.id,
+                "id_componente": socketService.idComponente,
+              };
+              Navigator.pop(context);
+              socketService.emit('borrar-habitacion', payload);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<dynamic> dialogo_borrar(
+      BuildContext context, SocketService socketService) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Estás seguro?'),
+        content: const Text('No podrás recuperar el componente'),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: const Text('Borrar'),
+            onPressed: () {
+              Map<String, dynamic> payload = {
+                'id': socketService.idComponente,
+                'viaje_id': socketService.viaje.id,
+              };
+              Navigator.pop(context);
+              socketService.emit('borrar-componente', payload);
+              Navigator.pop(context);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Padding lista_camas(BuildContext context, Habitacion habitacion, Cama cama) {
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: GestureDetector(
+          onTap: () => _modCamaDialog(context, habitacion.id, cama),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey[100],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        cama.tipo,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ...cama.usuarios.map(
+                    (usuario) => ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      horizontalTitleGap: 2,
+                      leading: CircleAvatar(
+                        maxRadius: 15,
+                        backgroundColor: usuario.color,
+                        child: Text(
+                          usuario.nombre.substring(0, 1) +
+                              usuario.apellido_1.substring(0, 1),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              fontFamily: 'Roboto'),
+                        ),
+                      ),
+                      title: Text(usuario.nombre + ' ' + usuario.apellido_1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
 
   Future<void> _modCamaDialog(context, id_habitacion, Cama cama) async {
     final socketService = Provider.of<SocketService>(context, listen: false);
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           //quiero que a la misma altura que el titulo se vea un icono para borrar la cama
@@ -295,7 +293,7 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
               IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {
-                 //al pular el boton de borrar se abre un dialogo de confirmacion
+                  //al pular el boton de borrar se abre un dialogo de confirmacion
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -311,7 +309,7 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
                           onPressed: () {
                             socketService.emit('borrar-cama', {
                               'id_cama': cama.id,
-                              'id_viaje': socketService.viaje.id,
+                              'viaje_id': socketService.viaje.id,
                               'id_componente': socketService.idComponente,
                             });
                             Navigator.of(context).pop();
@@ -325,7 +323,7 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
                 },
               ),
             ],
-          ), 
+          ),
           content: SizedBox(
               height: 300,
               width: 300,
@@ -361,20 +359,34 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
           actions: [
             TextButton(
               child: const Text('Añadirme'),
-              onPressed: cama.usuarios.any((usuario) => usuario.correo == socketService.correo) ? null : () {
-                socketService.socket.emit('añadir-usuario-cama',
-                    {'id_cama': cama.id, 'correo': socketService.correo, 'viaje_id,': socketService.viaje.id, 'id_componente': socketService.idComponente});
+              onPressed: cama.usuarios
+                      .any((usuario) => usuario.correo == socketService.correo)
+                  ? null
+                  : () {
                     Navigator.of(context).pop();
-              },
+                      socketService.socket.emit('añadir-usuario-cama', {
+                        'id_cama': cama.id,
+                        'correo': socketService.correo,
+                        'viaje_id': socketService.viaje.id,
+                        'id_componente': socketService.idComponente
+                      });
+                    },
             ),
-
             TextButton(
               child: const Text('Eliminarme'),
-              onPressed: cama.usuarios.any((usuario) => usuario.correo == socketService.correo) ? () {
-                socketService.socket.emit('borrar-usuario-cama',
-                     {'id_cama': cama.id, 'correo': socketService.correo, 'viaje_id,': socketService.viaje.id, 'id_componente': socketService.idComponente});
-                     Navigator.of(context).pop();
-              }: null,
+              onPressed: cama.usuarios
+                      .any((usuario) => usuario.correo == socketService.correo)
+                  ? () {
+                    Navigator.of(context).pop();
+                      socketService.socket.emit('borrar-usuario-cama', {
+                        'id_cama': cama.id,
+                        'correo': socketService.correo,
+                        'viaje_id': socketService.viaje.id,
+                        'id_componente': socketService.idComponente
+                      });
+                      
+                    }
+                  : null,
             ),
             TextButton(
               child: const Text('Cerrar'),
@@ -394,13 +406,14 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
 
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Añadir cama'),
           content: TextField(
+            autofocus: true,
             controller: _tipoCamaController,
-            decoration: const InputDecoration(labelText: 'Tipo de cama'),
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(labelText: 'Nombre de la cama'),
           ),
           actions: [
             TextButton(
@@ -429,12 +442,13 @@ class _HabitacionesScreenState extends State<HabitacionesScreen> {
 
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Añadir habitación'),
           content: TextField(
+            autofocus: true,
             controller: _nombreHabitacionController,
+            textCapitalization: TextCapitalization.sentences,
             decoration:
                 const InputDecoration(labelText: 'Nombre de la habitación'),
           ),

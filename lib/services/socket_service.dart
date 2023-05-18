@@ -15,6 +15,9 @@ class SocketService with ChangeNotifier {
   late Viaje _viaje;
   Viaje get viaje => this._viaje;
 
+  late List<Usuario> _usuariosViaje;
+  List<Usuario> get usuariosViaje => this._usuariosViaje;
+
   late String _idComponente;
   String get idComponente => this._idComponente;
 
@@ -44,6 +47,7 @@ class SocketService with ChangeNotifier {
     this._tipoComponente = tipoComponenteRecibido;
     notifyListeners();
   }
+
 
   SocketService() {
     this._initConfig();
@@ -79,6 +83,15 @@ class SocketService with ChangeNotifier {
 
       notifyListeners();
     });
+
+    _socket.on(
+        'lista-usuarios',
+        (payload) => {   
+        _usuariosViaje = (payload as List)
+                        .map((usuario) => Usuario.fromMap(usuario))
+                        .toList()
+        });
+
 
     _socket.on('mensaje-enviado-por-server', (payload) {
       print('nuevo-mensaje:');

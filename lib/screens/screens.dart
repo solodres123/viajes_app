@@ -6,6 +6,14 @@ export 'package:viajes_app/screens/inputs_screen.dart';
 export 'package:viajes_app/screens/componentes_screen.dart';
 export 'package:viajes_app/screens/habitaciones_screen.dart';
 export 'package:viajes_app/screens/confirmaciones_screen.dart';
+export 'package:viajes_app/screens/deudas_screen.dart';
+export 'package:viajes_app/screens/tareas_screen.dart';
+export 'package:viajes_app/screens/equipaje_grupal_screen.dart';
+export 'package:viajes_app/screens/calendario_screen.dart';
+export 'package:viajes_app/screens/compra_screen.dart';
+
+
+
 
 
 // DropdownButtonFormField(
