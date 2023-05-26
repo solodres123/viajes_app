@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../screens/screens.dart';
-import '../../../services/socket_service.dart';
-import '../partes_comunes.dart';
+import '../../screens/screens.dart';
+import '../../services/socket_service.dart';
+import 'partes_comunes.dart';
 
 class PersonasComp extends StatelessWidget {
   final int size;

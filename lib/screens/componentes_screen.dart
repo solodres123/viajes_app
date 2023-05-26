@@ -1,25 +1,20 @@
-import 'dart:ffi';
+
 import 'dart:io';
-import 'dart:developer';
-import 'dart:math' hide log;
-import 'package:flutter/cupertino.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderables/reorderables.dart';
-import 'package:viajes_app/models/componente.dart';
 import 'package:viajes_app/theme/app_theme.dart';
-import 'package:viajes_app/widgets/componentes/equipaje_grupal/equipaje_grupal_card.dart';
-import 'package:viajes_app/widgets/componentes/equipaje_individual/equipaje_individual_card.dart';
-import 'package:viajes_app/widgets/widgets.dart';
+import 'package:viajes_app/ui/input_decorations.dart';
+import 'package:viajes_app/widgets/componentes/partes_comunes.dart';
 import '../models/models.dart';
-import '../services/login_form_provider.dart';
 import '../services/new_card_form.dart';
 import '../services/socket_service.dart';
-import '../ui/input_decorations.dart';
-import '../widgets/componentes/partes_comunes.dart';
-import 'componentes_screen.dart';
+import '../widgets/widgets.dart';
 import 'package:intl/intl.dart';
+
+
 
 class ComponentesScreen extends StatefulWidget {
   const ComponentesScreen({Key? key}) : super(key: key);
@@ -63,10 +58,6 @@ class _ComponentesScreen extends State<ComponentesScreen> {
     'default': Icons.question_mark_rounded,
   };
 
-//q: desde esta screen puedo ir a otras screens y desde esas puedo usar los gestos del telefono para volver atras,
-// pero cuando lo hago y vuelvo a esta screen, los datos no se actualizan. ¿Como puedo hacer para que se actualicen?
-//a: para ejecutar un set state  cuando se vuelva a esta screen, se puede usar el metodo didChangeDependencies
-// que se ejecuta cada vez que se vuelve a esta screen
 
   @override
   void didChangeDependencies() {
@@ -144,7 +135,6 @@ class _ComponentesScreen extends State<ComponentesScreen> {
           size: size,
           name: comp.nombre,
           color: pastelColors[comp.color],
-          //obtener de la lista de deudas pequñas el total de lo que debe y lo que le deben
           teDeben: 0,
           debes: comp.propiedad_1,
         );
@@ -200,18 +190,11 @@ class _ComponentesScreen extends State<ComponentesScreen> {
           maximo: comp.propiedad_2,
         );
 
-      case "carpeta":
-        return Carpeta(
-          key: ValueKey(comp.id),
-        );
       default:
         Map<String, int> conteoEstados = comp.contarEstados();
         int confirmados = conteoEstados['confirmados'] ?? 0;
         int pendientes = conteoEstados['pendientes'] ?? 0;
         int noAsistiran = conteoEstados['noAsistiran'] ?? 0;
-        //print('Confirmados: $confirmados');
-        //print('Por confirmar: $pendientes');
-        //print('Confirmado que no: $noAsistiran');
         return PersonasComp(
           tipo: comp.tipo.toString(),
           key: ValueKey(comp.id),
@@ -228,8 +211,7 @@ class _ComponentesScreen extends State<ComponentesScreen> {
   @override
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket
-        .emit('solicitud-componentes-viaje', socketService.viaje.id);
+    socketService.socket.emit('solicitud-componentes-viaje', socketService.viaje.id);
 
     socketService.socket.on(
         'lista-componentes',
@@ -466,7 +448,6 @@ class _ComponentesScreen extends State<ComponentesScreen> {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: Text('¿Estás seguro?'),
-                    content: Text('No podrás recuperar este evento'),
                     actions: [
                       TextButton(
                         child: Text('Cancelar'),
@@ -478,6 +459,11 @@ class _ComponentesScreen extends State<ComponentesScreen> {
                         child: Text('Borrar'),
                         onPressed: () {
                           Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                          socketService.emit('borrar-usuario-de-viaje', {
+                            'correo': usuario.correo,
+                            'viaje_id': socketService.viaje.id
+                          });
                         },
                       ),
                     ],
@@ -600,7 +586,55 @@ class _ComponentesScreen extends State<ComponentesScreen> {
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         return AlertDialog(
-          title: Text('Detalles del viaje'),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Información del viaje',
+                  style: GoogleFonts.lato(
+                      textStyle: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black)),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('¿Estás seguro?'),
+                        actions: [
+                          TextButton(
+                            child: Text('Cancelar'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          TextButton(
+                            child: Text('Borrar'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              socketService.emit('eliminar-viaje', {
+                                'viaje_id': socketService.viaje.id
+                              });
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: Icon(Icons.delete),
+              ),
+            ],
+          ),
+
+
+
+          
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -761,6 +795,12 @@ class _ComponentesScreen extends State<ComponentesScreen> {
                                         hintText: 'Correo electrónico'),
                                   ),
                                   actions: [
+                                     TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancelar'),
+                                    ),
                                     TextButton(
                                       onPressed: () {
                                         print(socketService.viaje.id);
@@ -773,12 +813,7 @@ class _ComponentesScreen extends State<ComponentesScreen> {
                                       },
                                       child: const Text('Invitar'),
                                     ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Cancelar'),
-                                    ),
+                                   
                                   ],
                                 );
                               },

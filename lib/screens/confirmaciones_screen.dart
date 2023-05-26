@@ -53,7 +53,6 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
     socketService.socket.on(
         'envio-this-componente-confirmados',
         (payload) => {
-              print("patata"),
               if (mounted)
                 {
                   setState(() {

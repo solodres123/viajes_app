@@ -13,11 +13,14 @@ class InputsScreen extends StatefulWidget {
 
 class _InputsScreenState extends State<InputsScreen> {
   final TextEditingController nombreController = TextEditingController();
-  final TextEditingController primerApellidoController = TextEditingController();
-  final TextEditingController segundoApellidoController = TextEditingController();
+  final TextEditingController primerApellidoController =
+      TextEditingController();
+  final TextEditingController segundoApellidoController =
+      TextEditingController();
   final TextEditingController correoController = TextEditingController();
   final TextEditingController contrasenaController = TextEditingController();
-  final TextEditingController confirmarContrasenaController = TextEditingController();
+  final TextEditingController confirmarContrasenaController =
+      TextEditingController();
 
   int? selectedColorIndex;
 
@@ -42,17 +45,17 @@ class _InputsScreenState extends State<InputsScreen> {
   }
 
   final List<Color> colorList = [
-  Color(0xFFF4A460), // Brown
-  Color(0xFF00CED1), // Turquoise
-  Color(0xFFA52A2A), // Brown (dark)
-  Color(0xFFDA70D6), // Orchid
-  Color(0xFF00FA9A), // Medium Spring Green
-  Color(0xFF7B68EE), // Medium Slate Blue
-  Color(0xFF87CEEB), // Sky Blue
-  Color(0xFFB22222), // Firebrick
-  Color(0xFF20B2AA), // Light Sea Green
-  Color(0xFF1E90FF), // Dodger Blue
-];
+    Color(0xFFF4A460), // Brown
+    Color(0xFF00CED1), // Turquoise
+    Color(0xFFA52A2A), // Brown (dark)
+    Color(0xFFDA70D6), // Orchid
+    Color(0xFF00FA9A), // Medium Spring Green
+    Color(0xFF7B68EE), // Medium Slate Blue
+    Color(0xFF87CEEB), // Sky Blue
+    Color(0xFFB22222), // Firebrick
+    Color(0xFF20B2AA), // Light Sea Green
+    Color(0xFF1E90FF), // Dodger Blue
+  ];
 
   Widget buildColorCircles() {
     return Row(
@@ -90,7 +93,7 @@ class _InputsScreenState extends State<InputsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inputs y forms'),
+        title: const Text('Creación de cuenta'),
       ),
       body: Form(
         key: myFormKey,
@@ -135,65 +138,65 @@ class _InputsScreenState extends State<InputsScreen> {
                     hintText: 'Correo del usuario',
                   ),
                   validator: (String? value) {
-                    final pattern =r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[\w-]{2,4}$';
-                final regex = RegExp(pattern);
-                if (!regex.hasMatch(value!)) {
-                  return 'Por favor, introduce un correo válido';
-                }
-                return null;
-              },
+                    final pattern =
+                        r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[\w-]{2,4}$';
+                    final regex = RegExp(pattern);
+                    if (!regex.hasMatch(value!)) {
+                      return 'Por favor, introduce un correo válido';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 30),
+                TextFormField(
+                  controller: contrasenaController,
+                  obscureText: true,
+                  keyboardType: TextInputType.visiblePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    hintText: 'Introduzca su contraseña',
+                  ),
+                ),
+                const SizedBox(height: 30),
+                TextFormField(
+                  controller: confirmarContrasenaController,
+                  obscureText: true,
+                  keyboardType: TextInputType.visiblePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar contraseña',
+                    hintText: 'Confirme su contraseña',
+                  ),
+                  validator: (String? value) {
+                    if (value != contrasenaController.text) {
+                      return 'Las contraseñas no coinciden';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 30),
+                buildColorCircles(),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    if (myFormKey.currentState!.validate()) {
+                      socketService.emit('crear-usuario', {
+                        'nombre': nombreController.text,
+                        'primerApellido': primerApellidoController.text,
+                        'segundoApellido': segundoApellidoController.text,
+                        'correo': correoController.text,
+                        'contrasena': contrasenaController.text,
+                        'color': selectedColorIndex,
+                      });
+                      Navigator.pushReplacementNamed(context, 'login');
+                    }
+                  },
+                  child: const Text('Enviar'),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
-            TextFormField(
-              controller: contrasenaController,
-              obscureText: true,
-              keyboardType: TextInputType.visiblePassword,
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                hintText: 'Introduzca su contraseña',
-              ),
-            ),
-            const SizedBox(height: 30),
-            TextFormField(
-              controller: confirmarContrasenaController,
-              obscureText: true,
-              keyboardType: TextInputType.visiblePassword,
-              decoration: InputDecoration(
-                labelText: 'Confirmar contraseña',
-                hintText: 'Confirme su contraseña',
-              ),
-              validator: (String? value) {
-                if (value != contrasenaController.text) {
-                  return 'Las contraseñas no coinciden';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 30),
-            buildColorCircles(),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                if (myFormKey.currentState!.validate()) {
-                  // Procesar la información
-
-                  socketService.emit('crear-usuario', {
-                    'nombre': nombreController.text,
-                    'primerApellido': primerApellidoController.text,
-                    'segundoApellido': segundoApellidoController.text,
-                    'correo': correoController.text,
-                    'contrasena': contrasenaController.text,
-                    'color': selectedColorIndex,
-                  });
-                }
-              },
-              child: const Text('Enviar'),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  ),
-);
-}
+    );
+  }
 }

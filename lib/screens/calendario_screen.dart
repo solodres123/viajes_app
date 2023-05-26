@@ -72,7 +72,6 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
           icon: Icon(Icons.delete),
           onPressed: () {
             showDialog(
-              
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
@@ -89,7 +88,6 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     TextButton(
                       child: Text('Borrar'),
                       onPressed: () {
-
                         Map<String, dynamic> payload = {
                           "viaje_id": socketService.viaje.id,
                           'id': event.id,
@@ -98,7 +96,6 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
 
                         Navigator.of(context).pop();
                         socketService.emit('borrar-evento', payload);
-                        
                       },
                     ),
                   ],
@@ -135,7 +132,6 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     firstDate:
                         DateTime.now().subtract(const Duration(days: 365)),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
-                    
                   );
                   if (pickedDateRange != null) {
                     newDateRange = pickedDateRange;
@@ -328,13 +324,15 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
       if (mounted) {
         setState(() {
           componente = ComponenteCalendario.fromMap(payload);
-          _events = componente.subcomponente;
-          print(componente.propiedad_1);
-          print(componente.propiedad_2);
-          fechaViaje = DateTimeRange(
-              start: componente.propiedad_1, end: componente.propiedad_2);
-          print("eventos");
-          print(_events);
+          if (componente.id == socketService.idComponente) {
+            _events = componente.subcomponente;
+            print(componente.propiedad_1);
+            print(componente.propiedad_2);
+            fechaViaje = DateTimeRange(
+                start: componente.propiedad_1, end: componente.propiedad_2);
+            print("eventos");
+            print(_events);
+          }
         });
       }
     });
@@ -543,20 +541,23 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 10),
                                 child:
-                                //q: si fecha viaje es 1901-01-02 el texto sera patata
-                                //a: si fecha viaje es null el texto sera patata
-                                //a: si fecha viaje no es null el texto sera la fecha
-                                Text(fechaViaje!.start.toIso8601String().substring(0,10) =="1901-01-02"
-                                    ? 'Fecha para el plan sin asignar'
-                                    : '${DateFormat('dd/MM/yyy – kk:mm').format(fechaViaje!.start).substring(0, 10)}' +
-                                        ' - ' +
-                                        '${DateFormat('dd/MM/yyy – kk:mm').format(fechaViaje!.end).substring(0, 10)}',
-                                    style: GoogleFonts.lato(
-                                        textStyle: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black54))),
-                               
+                                    //q: si fecha viaje es 1901-01-02 el texto sera patata
+                                    //a: si fecha viaje es null el texto sera patata
+                                    //a: si fecha viaje no es null el texto sera la fecha
+                                    Text(
+                                        fechaViaje!.start
+                                                    .toIso8601String()
+                                                    .substring(0, 10) ==
+                                                "1901-01-02"
+                                            ? 'Fecha para el plan sin asignar'
+                                            : '${DateFormat('dd/MM/yyy – kk:mm').format(fechaViaje!.start).substring(0, 10)}' +
+                                                ' - ' +
+                                                '${DateFormat('dd/MM/yyy – kk:mm').format(fechaViaje!.end).substring(0, 10)}',
+                                        style: GoogleFonts.lato(
+                                            textStyle: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black54))),
                               ),
                               Spacer(),
                               Container(
@@ -604,7 +605,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                         children: List.generate(_events.length, (int index) {
                       return _buildEventTile(_events[index]);
                     })))),
-            const SizedBox( 
+            const SizedBox(
               height: 100,
             )
           ],

@@ -34,8 +34,6 @@ class SocketService with ChangeNotifier {
   late IO.Socket _socket;
   IO.Socket get socket => this._socket;
   Function get emit => this._socket.emit;
-//q: como accedo a esta funcion desde otras clases
-//a: con el provider
 
   void setViaje(Viaje viajeRecibido) {
     this._viaje = viajeRecibido;

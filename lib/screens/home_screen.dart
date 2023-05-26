@@ -35,11 +35,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     final socketService = Provider.of<SocketService>(context, listen: false);
+    
     socketService.socket.emit('solicitud-viajes',socketService.correo);
     socketService.socket.emit("register-user",socketService.correo);
-    socketService.socket.on(
-        'envio-viajes',
-        (payload) => {
+
+    socketService.socket.on("actualiza-viajes", (payload) =>
+    setState(() {socketService.socket.emit('solicitud-viajes',socketService.correo);}));
+
+    socketService.socket.on('envio-viajes',(payload) => {
               if (mounted)
                 setState(() {
                   _viajes = (payload as List)
@@ -232,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const BarraSuperior(),
+            //  const BarraSuperior(),
               const SizedBox(height: 10),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -268,26 +271,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(right: 10),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.amberAccent,
-                                      ),
-                                     
-                                      
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
-                            Carusel_viajes(),
+                            Carusel_viajes_futuros(),  
                           ],
                         ),
-                      ))),
+                      )
+                      )
+                      ),
+             Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      clipBehavior: Clip.antiAlias,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Text("Viajes pasados",
+                                        style: GoogleFonts.lato(
+                                            textStyle: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black54))),
+                                  ),
+                                ),
+                                const Spacer(),
+                              ],
+                            ),
+                            Carusel_viajes_pasados(),  
+                          ],
+                        ),
+                      )
+                      )
+                      ),
+            
             ],
           ),
         ),
@@ -301,8 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     );
   }
-
-  CarouselSlider Carusel_viajes() {
+//caroussel con todos los viajes
+  CarouselSlider Carusel_viajes_futuros() {
     return CarouselSlider(
       options: CarouselOptions(
         viewportFraction: 0.4,
@@ -314,11 +340,31 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         height: 230,
       ),
-      items: _viajes
+    items: _viajes.where((viaje) => viaje.fechaInicio.isAfter(DateTime.now()))
           .map((viaje) => ViajeCard(
                 viaje: viaje,
               ))
-          .toList(),
+          .toList()
+    );
+  }
+  //carrousel con los viajes futuros
+  CarouselSlider Carusel_viajes_pasados() {
+    return CarouselSlider(
+      options: CarouselOptions(
+        viewportFraction: 0.4,
+        initialPage: 0,
+        pageSnapping: false,
+        enableInfiniteScroll: true,
+        reverse: false,
+        enlargeCenterPage: false,
+        scrollDirection: Axis.horizontal,
+        height: 230,
+      ),
+      items: _viajes.where((viaje) => viaje.fechaFin.isBefore(DateTime.now()))
+          .map((viaje) => ViajeCard(
+                viaje: viaje,
+              ))
+          .toList()
     );
   }
 
@@ -452,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) => ListTile(
                 title: Text(selectedEvents[index].viaje.nombre),
                 leading: const Icon(
-                  Icons.directions_car,
+                  Icons.airplanemode_active,
                   color: Colors.blue,
                 ),
                 onTap: () {
@@ -557,7 +603,21 @@ class SiguientePlan extends StatelessWidget {
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87)))),
-                      const Text("Hola"),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                            "Faltan " +
+                                (proxViaje.fechaInicio
+                                    .difference(DateTime.now())
+                                    .inDays + 1)
+                                    .toString() +
+                                " días",
+                            style: GoogleFonts.lato(
+                                textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black54))),
+                      ),
                     ],
                   ),
                 ),
@@ -583,8 +643,6 @@ class BarraSuperior extends StatelessWidget {
       width: double.infinity,
       color: const Color.fromARGB(255, 252, 180, 8),
       child: Row(children: [
-        const SizedBox(width: 10),
-        const Icon(Icons.search),
         const SizedBox(width: 10),
         Align(
             alignment: Alignment.centerLeft,
