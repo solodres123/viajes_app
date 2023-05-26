@@ -1,10 +1,6 @@
 import 'package:flutter/rendering.dart';
 
 class Usuario {
-  @override
-  String toString() {
-    return 'Usuario(correo: $correo, nombre: $nombre, apellido_1: $apellido_1, apellido_2: $apellido_2)';
-  }
 
   String correo;
   String nombre;
@@ -20,8 +16,6 @@ class Usuario {
       required this.apellido_2,
       required this.color,
       });
-
-
 
 
   factory Usuario.fromMap(Map<String, dynamic> obj) => Usuario(

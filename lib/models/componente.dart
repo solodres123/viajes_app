@@ -234,7 +234,6 @@ class ComponenteTareas extends Componente {
             .map((deudas) => Tarea.fromMap(deudas))
             .toList()
         : [];
-// Agrega esta línea
 
     return ComponenteTareas(
         id: obj['id'],
@@ -251,7 +250,6 @@ class ComponenteTareas extends Componente {
   String toString() {
     return 'ComponenteItemsGrupales(id: $id, tipo: $tipo, color: $color, indice: $indice, nombre: $nombre, items: $subcomponente)';
   }
-
 
   ComponenteItemsGrupales({
     required String id,
@@ -279,8 +277,6 @@ class ComponenteTareas extends Componente {
             .map((items) => ItemGrupal.fromMap(items))
             .toList()
         : [];
-// Agrega esta línea
-     //log("objeto: " + obj.toString());
       
       return ComponenteItemsGrupales(
           id: obj['id'],
@@ -299,7 +295,6 @@ class ComponenteTareas extends Componente {
   String toString() {
     return 'ComponenteCalendario(id: $id, tipo: $tipo, color: $color, indice: $indice, nombre: $nombre, items: $subcomponente)';
   }
-
 
   ComponenteCalendario({
     required String id,
@@ -327,8 +322,7 @@ class ComponenteTareas extends Componente {
             .map((evento) => Evento.fromMap(evento))
             .toList()
         : [];
-// Agrega esta línea
-  
+
       return ComponenteCalendario(
           id: obj['id'],
           tipo: obj['tipo'],
@@ -374,9 +368,6 @@ class ComponenteTareas extends Componente {
             .map((items) => ItemCompra.fromMap(items))
             .toList()
         : [];
-// Agrega esta línea
-      //log("objeto: " + obj.toString());
-      
       return ComponenteCompra(
           id: obj['id'],
           tipo: obj['tipo'],
