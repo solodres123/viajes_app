@@ -110,55 +110,57 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
       ),
     ]);
   }
+void _showEditTravelDateDialog() {
+  final socketService = Provider.of<SocketService>(context, listen: false);
+     DateTimeRange? newDateRange;
 
-  void _showEditTravelDateDialog() {
-    final socketService = Provider.of<SocketService>(context, listen: false);
-    DateTimeRange? newDateRange;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          key: UniqueKey(),
-          title: const Text('Editar fecha del viaje'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextButton(
-                onPressed: () async {
-                  final DateTimeRange? pickedDateRange =
-                      await showDateRangePicker(
-                    context: context,
-                    firstDate:
-                        DateTime.now().subtract(const Duration(days: 365)),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (pickedDateRange != null) {
-                    newDateRange = pickedDateRange;
-                  }
-                },
-                child: Text(newDateRange != null
-                    ? 'Fecha seleccionada: ${newDateRange!.start.toLocal()} - ${newDateRange!.end.toLocal()}'
-                    : 'Seleccione un rango de fechas'),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            key: UniqueKey(),
+            title: const Text('Editar fecha del viaje'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final DateTimeRange? pickedDateRange =
+                        await showDateRangePicker(
+                      context: context,
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (pickedDateRange != null) {
+                      newDateRange = pickedDateRange;
+                      setState(() {}); // This will cause the dialog to rebuild
+                    }
+                  },
+                  child: Text(newDateRange != null
+                      ? '${newDateRange!.start.toLocal().toString().substring(0, 10)} -> ${newDateRange!.end.toLocal().toString().substring(0, 10)}'
+                      : 'Seleccione un rango de fechas', style: GoogleFonts.lato(
+                                            textStyle: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                               ))),
+                ),
+              ],
             ),
-            //el boton solo se activa si se ha seleccionado un rango de fechas
-            // para que no se pueda actualizar con fechas vacias o null
-            // escribe esto:
-            //
-            TextButton(
-              child: const Text('Actualizar'),
-              onPressed: () {
-                if (newDateRange != null) {
-                  setState(() {
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Actualizar'),
+                onPressed: () {
+                  if (newDateRange != null) {
                     Map<String, dynamic> payload = {
                       'fecha_inicio': newDateRange!.start.toIso8601String(),
                       'fecha_final': newDateRange!.end.toIso8601String(),
@@ -169,17 +171,16 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     socketService.emit('actualizar-fechas', payload);
                     Navigator.of(context).pop();
                     fechaViaje = newDateRange;
-                  });
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+                  }
+                },
+              ),
+            ],
+          );
+        }
+      );
+    },
+  );
+}
   TableCalendar<dynamic> calendario() {
     return TableCalendar(
       calendarStyle: const CalendarStyle(
@@ -215,6 +216,9 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
 
           Widget? circleEvent;
 
+// si un dia tiene eventos amarillos y rojos se mostrara el rojo
+
+          
           for (Evento event in _getEventsForDay(day)) {
             if (isInRange(day, event)) {
               circleEvent = Center(
@@ -339,107 +343,100 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
     super.initState();
   }
 
-  void _showAddEventDialog() {
-    SocketService socketService =
-        Provider.of<SocketService>(context, listen: false);
-    DateTime? _fechaInicio;
-    DateTime? _fechaFinal;
-    TextEditingController _prioridadController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            key: UniqueKey(),
-            title: const Text('Añadir evento'),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Fecha de inicio:'),
-                  TextButton(
-                    onPressed: () async {
-                      final DateTime? fechaInicioSeleccionada =
-                          await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate:
-                            DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (fechaInicioSeleccionada != null) {
-                        setState(() {
-                          _fechaInicio = fechaInicioSeleccionada;
-                        });
-                      }
-                    },
-                    child: Text(_fechaInicio != null
-                        ? 'Fecha seleccionada: ${_fechaInicio?.toLocal()}'
-                        : 'Seleccione una fecha'),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text('Fecha final:'),
-                  TextButton(
-                    onPressed: () async {
-                      final DateTime? fechaFinalSeleccionada =
-                          await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate:
-                            DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (fechaFinalSeleccionada != null) {
-                        setState(() {
-                          _fechaFinal = fechaFinalSeleccionada;
-                        });
-                      }
-                    },
-                    child: Text(_fechaFinal != null
-                        ? 'Fecha seleccionada: ${_fechaFinal?.toLocal()}'
-                        : 'Seleccione una fecha'),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text('Prioridad (0 o 1):'),
-                  TextField(
-                    controller: _prioridadController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp('[0-1]')),
-                    ],
-                  ),
-                ],
-              ),
+ void _showAddEventDialog() {
+  SocketService socketService =
+      Provider.of<SocketService>(context, listen: false);
+  DateTime? _fechaInicio;
+  DateTime? _fechaFinal;
+  TextEditingController _prioridadController = TextEditingController(text: "0");
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          key: UniqueKey(),
+          title: const Text('Añadir evento'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Fecha de inicio:'),
+                TextButton(
+                  onPressed: () async {
+                    final DateTime? fechaInicioSeleccionada =
+                        await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (fechaInicioSeleccionada != null) {
+                      setState(() {
+                        _fechaInicio = fechaInicioSeleccionada;
+                      });
+                    }
+                  },
+                  child: Text(_fechaInicio != null
+                      ? '${_fechaInicio?.toLocal().toString().substring(0, 10)}'
+                      : 'Seleccione una fecha'),
+                ),
+                const SizedBox(height: 10),
+                const Text('Fecha final:'),
+                TextButton(
+                  onPressed: () async {
+                    final DateTime? fechaFinalSeleccionada =
+                        await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (fechaFinalSeleccionada != null) {
+                      setState(() {
+                        _fechaFinal = fechaFinalSeleccionada;
+                      });
+                    }
+                  },
+                  child: Text(_fechaFinal != null
+                      ? '${_fechaFinal?.toLocal().toString().substring(0, 10)}'
+                      : 'Seleccione una fecha'),
+                ),
+                const SizedBox(height: 10),
+               
+              ],
             ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('Cancelar'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: const Text('Añadir'),
-                onPressed: () {
-                  Map<String, dynamic> payload = {
-                    'fecha_inicio': _fechaInicio?.toIso8601String(),
-                    'fecha_final': _fechaFinal?.toIso8601String(),
-                    'prioridad': int.parse(_prioridadController.text),
-                    'id_componente': socketService.idComponente,
-                    'correo': socketService.correo,
-                    "viaje_id": socketService.viaje.id,
-                  };
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Añadir'),
+              onPressed: () {
+                Map<String, dynamic> payload = {
+                  'fecha_inicio': _fechaInicio?.toIso8601String(),
+                  'fecha_final': _fechaFinal?.toIso8601String(),
+                  'prioridad': 1,
+                  'id_componente': socketService.idComponente,
+                  'correo': socketService.correo,
+                  "viaje_id": socketService.viaje.id,
+                };
 
-                  socketService.emit('añadir-evento', payload);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
+                socketService.emit('añadir-evento', payload);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      });
+    },
+  );
+}
 
   Column _buildUserCheckboxes() {
     SocketService socketService =
@@ -602,9 +599,16 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     child: Column(
-                        children: List.generate(_events.length, (int index) {
-                      return _buildEventTile(_events[index]);
-                    })))),
+                        //solo lkos eventos cuyo usuario sea el usuario actual
+                        children: _events
+                            .where((event) =>
+                                event.usuario.correo == socketService.correo)
+                            .map(_buildEventTile)
+                            .toList()))),
+                       
+
+                     
+                    
             const SizedBox(
               height: 100,
             )

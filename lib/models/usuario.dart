@@ -17,7 +17,6 @@ class Usuario {
       required this.color,
       });
 
-
   factory Usuario.fromMap(Map<String, dynamic> obj) => Usuario(
     correo: obj.containsKey('correo') ? obj['correo'] : 'no-correo', 
     nombre: obj.containsKey('nombre') ? obj['nombre'] : 'no-nombre',
@@ -28,16 +27,9 @@ class Usuario {
 }
 
 final List<Color> colores = [
-  Color(0xFFF4A460), // Brown
-  Color(0xFF00CED1), // Turquoise
-  Color(0xFFA52A2A), // Brown (dark)
-  Color(0xFFDA70D6), // Orchid
-  Color(0xFF00FA9A), // Medium Spring Green
-  Color(0xFF7B68EE), // Medium Slate Blue
-  Color(0xFF87CEEB), // Sky Blue
-  Color(0xFFB22222), // Firebrick
-  Color(0xFF20B2AA), // Light Sea Green
-  Color(0xFF1E90FF), // Dodger Blue
+const Color(0xFFF4A460),const Color(0xFF00CED1),const Color(0xFFA52A2A),const Color(0xFFDA70D6),
+const Color(0xFF00FA9A),const Color(0xFF7B68EE),const Color(0xFF87CEEB),const Color(0xFFB22222),
+const Color(0xFF20B2AA),const Color(0xFF1E90FF),
 ];
 
 

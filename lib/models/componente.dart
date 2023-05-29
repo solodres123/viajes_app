@@ -4,23 +4,12 @@ import 'package:viajes_app/models/item_compra.dart';
 import 'package:viajes_app/models/models.dart';
 
 abstract class Componente {
-  String id;
-  String tipo;
-  int color;
-  int indice;
-  String nombre;
-  dynamic subcomponente;
-  dynamic propiedad_1;
-  dynamic propiedad_2;
+  String id; String tipo; int color;int indice;String nombre;
+  dynamic subcomponente;dynamic propiedad_1;dynamic propiedad_2;
 
   Componente({
-    required this.id,
-    required this.tipo,
-    required this.color,
-    required this.indice,
-    required this.nombre,
-    required this.subcomponente,
-    required this. propiedad_1,
+    required this.id,required this.tipo,required this.color,required this.indice,
+    required this.nombre,required this.subcomponente,required this. propiedad_1,
     required this.propiedad_2,
   });
 
@@ -29,25 +18,18 @@ abstract class Componente {
     switch (tipo) {
       case 'habitaciones':
         return ComponenteHabitacion.fromMap(obj);
-
       case 'confirmaciones':
         return ComponenteAsistencia.fromMap(obj);
-
       case 'deudas':
         return ComponenteDeudas.fromMap(obj);
-
       case 'tareas':
         return ComponenteTareas.fromMap(obj);
-
       case 'equipaje_grupal':
         return ComponenteItemsGrupales.fromMap(obj);
-
       case 'calendario':
         return ComponenteCalendario.fromMap(obj);
-
       case "compra":
         return ComponenteCompra.fromMap(obj);
-
       default:
         return ComponenteHabitacion.fromMap(obj);
     }
@@ -217,6 +199,8 @@ class ComponenteTareas extends Componente {
     required int indice,
     required int color,
     required String nombre,
+    required String propiedad_1,
+    required String propiedad_2,
     required subcomponente,
   }) : super(
             id: id,
@@ -225,8 +209,8 @@ class ComponenteTareas extends Componente {
             color: color,
             indice: indice,
             nombre: nombre,
-            propiedad_1: "0",
-            propiedad_2: "0");
+            propiedad_1: propiedad_1,
+            propiedad_2: propiedad_2);
 
   factory ComponenteTareas.fromMap(Map<String, dynamic> obj) {
     List<Tarea> tareasList = obj.containsKey('subcomponente')
@@ -241,27 +225,17 @@ class ComponenteTareas extends Componente {
         color: obj['color'],
         indice: obj['indice'],
         nombre: obj['nombre'],
+        propiedad_1: obj['propiedad_1'].toString(),
+        propiedad_2: obj['propiedad_2'].toString(),
         subcomponente: tareasList);
   }
 }
 
-    class ComponenteItemsGrupales extends Componente {
-  @override
-  String toString() {
-    return 'ComponenteItemsGrupales(id: $id, tipo: $tipo, color: $color, indice: $indice, nombre: $nombre, items: $subcomponente)';
-  }
-
+  class ComponenteItemsGrupales extends Componente {
   ComponenteItemsGrupales({
-    required String id,
-    required String tipo,
-    required int indice,
-    required int color,
-    required String nombre,
-    required subcomponente,
-   required String propiedad_1,
-   required String propiedad_2,
-
-  }) : super(
+    required String id,required String tipo,required int indice,required int color,required String nombre,
+    required subcomponente,required String propiedad_1,required String propiedad_2,}) 
+    : super(
             id: id,
             subcomponente: subcomponente,
             tipo: 'equipaje_grupal',
@@ -275,9 +249,7 @@ class ComponenteTareas extends Componente {
     List<ItemGrupal> itemsList = obj.containsKey('subcomponente')
         ? (obj['subcomponente'] as List)
             .map((items) => ItemGrupal.fromMap(items))
-            .toList()
-        : [];
-      
+            .toList(): [];
       return ComponenteItemsGrupales(
           id: obj['id'],
           tipo: obj['tipo'],

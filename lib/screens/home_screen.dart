@@ -28,21 +28,27 @@ class _HomeScreenState extends State<HomeScreen> {
       fechaInicio: DateTime.now(),
       fechaFin: DateTime.now(),
       estado: 'No hay viajes próximos',
-       descripcion: '', 
-       id: '');
+      descripcion: '',
+      id: '');
 
   @override
   void initState() {
     super.initState();
     final socketService = Provider.of<SocketService>(context, listen: false);
-    
-    socketService.socket.emit('solicitud-viajes',socketService.correo);
-    socketService.socket.emit("register-user",socketService.correo);
 
-    socketService.socket.on("actualiza-viajes", (payload) =>
-    setState(() {socketService.socket.emit('solicitud-viajes',socketService.correo);}));
+    socketService.socket.emit('solicitud-viajes', socketService.correo);
+    socketService.socket.emit("register-user", socketService.correo);
 
-    socketService.socket.on('envio-viajes',(payload) => {
+    socketService.socket.on(
+        "actualiza-viajes",
+        (payload) => setState(() {
+              socketService.socket
+                  .emit('solicitud-viajes', socketService.correo);
+            }));
+
+    socketService.socket.on(
+        'envio-viajes',
+        (payload) => {
               if (mounted)
                 setState(() {
                   _viajes = (payload as List)
@@ -61,12 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       .toList();
                 })
             });
-    socketService.socket.on("añadido-a-viaje", (payload) =>
-    setState(() {
-      socketService.socket.emit('solicitud-viajes',socketService.correo);
-    }));
-
-    
+    socketService.socket.on(
+        "añadido-a-viaje",
+        (payload) => setState(() {
+              socketService.socket
+                  .emit('solicitud-viajes', socketService.correo);
+            }));
   }
 
   void nuevoViajeDialog(BuildContext context) async {
@@ -235,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-            //  const BarraSuperior(),
+              //  const BarraSuperior(),
               const SizedBox(height: 10),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -273,13 +279,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const Spacer(),
                               ],
                             ),
-                            Carusel_viajes_futuros(),  
+                            Carusel_viajes_futuros(),
                           ],
                         ),
-                      )
-                      )
-                      ),
-             Padding(
+                      ))),
+              Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Card(
                       elevation: 5,
@@ -307,65 +311,65 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const Spacer(),
                               ],
                             ),
-                            Carusel_viajes_pasados(),  
+                            Carusel_viajes_pasados(),
                           ],
                         ),
-                      )
-                      )
-                      ),
-            
+                      ))),
+              SizedBox(height: 80)
             ],
           ),
         ),
       ),
-    floatingActionButton: FloatingActionButton(
-    onPressed: () {
-    nuevoViajeDialog(context);
-    },
-    child: const Icon(Icons.add),
-    backgroundColor: AppTheme.primary,
-    ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          nuevoViajeDialog(context);
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: AppTheme.primary,
+      ),
     );
   }
+
 //caroussel con todos los viajes
   CarouselSlider Carusel_viajes_futuros() {
     return CarouselSlider(
-      options: CarouselOptions(
-        viewportFraction: 0.4,
-        initialPage: 0,
-        pageSnapping: false,
-        enableInfiniteScroll: true,
-        reverse: false,
-        enlargeCenterPage: false,
-        scrollDirection: Axis.horizontal,
-        height: 230,
-      ),
-    items: _viajes.where((viaje) => viaje.fechaInicio.isAfter(DateTime.now()))
-          .map((viaje) => ViajeCard(
-                viaje: viaje,
-              ))
-          .toList()
-    );
+        options: CarouselOptions(
+          viewportFraction: 0.4,
+          initialPage: 0,
+          pageSnapping: false,
+          enableInfiniteScroll: true,
+          reverse: false,
+          enlargeCenterPage: false,
+          scrollDirection: Axis.horizontal,
+          height: 230,
+        ),
+        items: _viajes
+            .where((viaje) => viaje.fechaInicio.isAfter(DateTime.now()))
+            .map((viaje) => ViajeCard(
+                  viaje: viaje,
+                ))
+            .toList());
   }
+
   //carrousel con los viajes futuros
   CarouselSlider Carusel_viajes_pasados() {
     return CarouselSlider(
-      options: CarouselOptions(
-        viewportFraction: 0.4,
-        initialPage: 0,
-        pageSnapping: false,
-        enableInfiniteScroll: true,
-        reverse: false,
-        enlargeCenterPage: false,
-        scrollDirection: Axis.horizontal,
-        height: 230,
-      ),
-      items: _viajes.where((viaje) => viaje.fechaFin.isBefore(DateTime.now()))
-          .map((viaje) => ViajeCard(
-                viaje: viaje,
-              ))
-          .toList()
-    );
+        options: CarouselOptions(
+          viewportFraction: 0.4,
+          initialPage: 0,
+          pageSnapping: false,
+          enableInfiniteScroll: true,
+          reverse: false,
+          enlargeCenterPage: false,
+          scrollDirection: Axis.horizontal,
+          height: 230,
+        ),
+        items: _viajes
+            .where((viaje) => viaje.fechaFin.isBefore(DateTime.now()))
+            .map((viaje) => ViajeCard(
+                  viaje: viaje,
+                ))
+            .toList());
   }
 
   Card TarjetaCalendario() {
@@ -492,15 +496,11 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('eventos:'),
           content: Container(
             width: 200,
-            height: 200,
+            height: 150,
             color: Colors.white,
             child: ListView.separated(
               itemBuilder: (context, index) => ListTile(
-                title: Text(selectedEvents[index].viaje.nombre),
-                leading: const Icon(
-                  Icons.airplanemode_active,
-                  color: Colors.blue,
-                ),
+                title: Text(selectedEvents[index].viaje.nombre),     
                 onTap: () {
                   socketService.setViaje(selectedEvents[index].viaje);
                   Navigator.push(
@@ -585,10 +585,12 @@ class SiguientePlan extends StatelessWidget {
                   child: SizedBox(
                       height: 80,
                       width: 80,
-                      child: Image(
+                      
+                      child: proxViaje.nombre != "No hay viajes próximos" ? Image(
                         image: NetworkImage(proxViaje.urlImagen),
                         fit: BoxFit.cover,
-                      )),
+                      ): null
+                      ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
@@ -603,21 +605,26 @@ class SiguientePlan extends StatelessWidget {
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87)))),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                            "Faltan " +
-                                (proxViaje.fechaInicio
-                                    .difference(DateTime.now())
-                                    .inDays + 1)
-                                    .toString() +
-                                " días",
-                            style: GoogleFonts.lato(
-                                textStyle: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black54))),
-                      ),
+                     
+                     
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: 
+                            Text(proxViaje.nombre != "No hay viajes próximos" ? 
+                                "Faltan " +
+                                    (proxViaje.fechaInicio
+                                                .difference(DateTime.now())
+                                                .inDays +
+                                            1)
+                                        .toString() +
+                                    " días": "",
+                                style: GoogleFonts.lato(
+                                    textStyle: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black54))),
+                          ),
+                        
                     ],
                   ),
                 ),

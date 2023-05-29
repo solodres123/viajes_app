@@ -249,7 +249,7 @@ class _CompraScreenState extends State<CompraScreen> {
 
             background: Container(
               alignment: Alignment.centerLeft,
-              padding: EdgeInsets.only(right: 20.0),
+              padding: EdgeInsets.only(left: 10.0),
               color: Colors.green,
               child: Text(
                 'Marcar como comprado',
@@ -258,7 +258,7 @@ class _CompraScreenState extends State<CompraScreen> {
             ),
             secondaryBackground: Container(
               alignment: Alignment.centerRight,
-              padding: EdgeInsets.only(left: 20.0),
+              padding: EdgeInsets.only(right: 10.0),
               color: Colors.red,
               child: Text(
                 'Borrar de la lista',

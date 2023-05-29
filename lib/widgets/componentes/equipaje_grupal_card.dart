@@ -110,7 +110,7 @@ class EquipajeGrupalComp extends StatelessWidget {
                           "\nitems "),
                   Padding(padding: EdgeInsets.only(top: paddingTextoBarra)),
 
-                  llevan==0 && total==0?
+                  llevan=="0" && total=="0"?
             BarraProgreso(
                 actual: 1,
                 maximo: 1,

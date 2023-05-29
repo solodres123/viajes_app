@@ -1,4 +1,5 @@
 
+import 'package:dart_extensions_methods/dart_extension_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../screens/screens.dart';
@@ -9,8 +10,8 @@ class TareasComp extends StatelessWidget {
   final int size;
   final String name;
   final Color color;
-  final int completadas;
-  final int total;
+  final String completadas;
+  final String total;
   final String id;
   final String tipo;
 
@@ -120,7 +121,7 @@ class TareasComp extends StatelessWidget {
                 subTitulo: "$completadas/$total\ncompletadas"),
             Padding(padding: EdgeInsets.only(top: paddingTextoBarra)),
            
-           completadas==0 && total==0?
+            completadas=="0" && total=="0"?
             BarraProgreso(
                 actual: 1,
                 maximo: 1,
@@ -128,13 +129,11 @@ class TareasComp extends StatelessWidget {
                 maxWidth: maxWidth * 0.7,
                 tamanoBarra: tamanoBarra):
             BarraProgreso(
-                actual: completadas,
-                maximo: total,
+                actual: completadas.toInt(),
+                maximo: total.toInt(),
                 paddingTextoBarra: paddingTextoBarra,
                 maxWidth: maxWidth * 0.7,
                 tamanoBarra: tamanoBarra)
-                
-                
                 ,
           ])),
     )));

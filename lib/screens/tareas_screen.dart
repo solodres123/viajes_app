@@ -16,7 +16,7 @@ class TareasScreen extends StatefulWidget {
 
 class _TareasScreenState extends State<TareasScreen> {
   ComponenteTareas componente = ComponenteTareas(
-      indice: 0, color: 0, nombre: "", subcomponente: [], id: "", tipo: "");
+      indice: 0, color: 0, nombre: "", subcomponente: [], id: "", tipo: "", propiedad_1: "", propiedad_2: "");
   List<Tarea> tareas = [];
 
   @override

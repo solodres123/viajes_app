@@ -146,8 +146,8 @@ class _ComponentesScreen extends State<ComponentesScreen> {
           size: size,
           name: comp.nombre,
           color: pastelColors[comp.color],
-          completadas: 0,
-          total: 0,
+          completadas: comp.propiedad_1,
+          total: comp.propiedad_2,
         );
       case "equipaje_grupal":
         //print(comp.propiedad_1);
